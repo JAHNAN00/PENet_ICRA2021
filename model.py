@@ -119,12 +119,15 @@ class ENet(nn.Module):
         geo_s6 = None
 
         if self.args.convolutional_layer_encoding == "xyz":
-            geo_s1 = self.geofeature(d, vnorm, unorm, 352, 1216, c352, c1216, f352, f1216)
-            geo_s2 = self.geofeature(d_s2, vnorm_s2, unorm_s2, 352 / 2, 1216 / 2, c352, c1216, f352, f1216)
-            geo_s3 = self.geofeature(d_s3, vnorm_s3, unorm_s3, 352 / 4, 1216 / 4, c352, c1216, f352, f1216)
-            geo_s4 = self.geofeature(d_s4, vnorm_s4, unorm_s4, 352 / 8, 1216 / 8, c352, c1216, f352, f1216)
-            geo_s5 = self.geofeature(d_s5, vnorm_s5, unorm_s5, 352 / 16, 1216 / 16, c352, c1216, f352, f1216)
-            geo_s6 = self.geofeature(d_s6, vnorm_s6, unorm_s6, 352 / 32, 1216 / 32, c352, c1216, f352, f1216)
+            # Legacy KITTI geometry remains the default. The NYU benchmark
+            # opts into its padded spatial extent without changing channels.
+            height, width = getattr(self.args, 'geometry_size', (352, 1216))
+            geo_s1 = self.geofeature(d, vnorm, unorm, height, width, c352, c1216, f352, f1216)
+            geo_s2 = self.geofeature(d_s2, vnorm_s2, unorm_s2, height / 2, width / 2, c352, c1216, f352, f1216)
+            geo_s3 = self.geofeature(d_s3, vnorm_s3, unorm_s3, height / 4, width / 4, c352, c1216, f352, f1216)
+            geo_s4 = self.geofeature(d_s4, vnorm_s4, unorm_s4, height / 8, width / 8, c352, c1216, f352, f1216)
+            geo_s5 = self.geofeature(d_s5, vnorm_s5, unorm_s5, height / 16, width / 16, c352, c1216, f352, f1216)
+            geo_s6 = self.geofeature(d_s6, vnorm_s6, unorm_s6, height / 32, width / 32, c352, c1216, f352, f1216)
         elif self.args.convolutional_layer_encoding == "uv":
             geo_s1 = torch.cat((vnorm, unorm), dim=1)
             geo_s2 = torch.cat((vnorm_s2, unorm_s2), dim=1)
@@ -410,7 +413,7 @@ class PENet_C2(nn.Module):
 
         # CSPN
         ks = 3
-        encoder3 = torch.zeros(ks * ks, ks * ks, ks, ks).cuda()
+        encoder3 = torch.zeros(ks * ks, ks * ks, ks, ks)
         kernel_range_list = [i for i in range(ks - 1, -1, -1)]
         ls = []
         for i in range(ks):
@@ -421,7 +424,7 @@ class PENet_C2(nn.Module):
         self.encoder3 = nn.Parameter(encoder3, requires_grad=False)
 
         ks = 5
-        encoder5 = torch.zeros(ks * ks, ks * ks, ks, ks).cuda()
+        encoder5 = torch.zeros(ks * ks, ks * ks, ks, ks)
         kernel_range_list = [i for i in range(ks - 1, -1, -1)]
         ls = []
         for i in range(ks):
@@ -432,7 +435,7 @@ class PENet_C2(nn.Module):
         self.encoder5 = nn.Parameter(encoder5, requires_grad=False)
 
         ks = 7
-        encoder7 = torch.zeros(ks * ks, ks * ks, ks, ks).cuda()
+        encoder7 = torch.zeros(ks * ks, ks * ks, ks, ks)
         kernel_range_list = [i for i in range(ks - 1, -1, -1)]
         ls = []
         for i in range(ks):
